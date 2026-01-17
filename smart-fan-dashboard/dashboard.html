@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Live Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card h3 { margin: 0; color: #666; font-size: 0.9rem; }
+        .card p { font-size: 2rem; margin: 10px 0; font-weight: bold; }
+        .status-safe { color: green; }
+        .status-danger { color: red; }
+        #logout { background: #ff4d4d; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Smart Ventilation Dashboard</h2>
+        <button id="logout" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="cards">
+        <div class="card">
+            <h3>Temperature</h3>
+            <p id="temp">-- °C</p>
+        </div>
+        <div class="card">
+            <h3>Gas Level</h3>
+            <p id="gas">-- V</p>
+        </div>
+        <div class="card">
+            <h3>System Status</h3>
+            <p id="status">--</p>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 8px;">
+        <canvas id="myChart" height="100"></canvas>
+    </div>
+
+    <script>
+        // CONFIGURATION
+        const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
+        const SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY";
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Security Check
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'index.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            window.location.href = 'index.html';
+        }
+
+        // Setup Chart
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            data: { labels: [], datasets: [{ label: 'Temperature', data: [], borderColor: 'blue', fill: false }] }
+        });
+
+        async function fetchData() {
+            // Get latest reading
+            const { data, error } = await supabase
+                .from('readings')
+                .select('*')
+                .order('id', { ascending: false })
+                .limit(1);
+
+            if (data && data.length > 0) {
+                const reading = data[0];
+                document.getElementById('temp').innerText = reading.temperature + " °C";
+                document.getElementById('gas').innerText = reading.smoke_level + " V";
+                
+                const statusEl = document.getElementById('status');
+                statusEl.innerText = reading.status;
+                statusEl.className = reading.status === 'DANGER' ? 'status-danger' : 'status-safe';
+
+                // Update Chart
+                const time = new Date(reading.created_at).toLocaleTimeString();
+                if (myChart.data.labels[myChart.data.labels.length - 1] !== time) {
+                    myChart.data.labels.push(time);
+                    myChart.data.datasets[0].data.push(reading.temperature);
+                    if (myChart.data.labels.length > 10) {
+                        myChart.data.labels.shift();
+                        myChart.data.datasets[0].data.shift();
+                    }
+                    myChart.update();
+                }
+            }
+        }
+
+        setInterval(fetchData, 2000); // Update every 2 seconds
+        fetchData();
+    </script>
+</body>
+</html>
