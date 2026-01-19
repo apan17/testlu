@@ -1,15 +1,6 @@
-I understand completely. I apologize for the previous confusion.
-
-Here is the **FULL, COMPLETE README.md** source code.
-
-You do not need to format anything yourself. Just **COPY** the code block below, **PASTE** it into your `README.md` file, and save it. It includes all the tables, bullet points, and code blocks exactly as they should appear.
-
-```markdown
-# Smart Ventilation & Smoke Detection System
+# Smart Ventilation System
 
 **IoT-based intelligent ventilation system using ESP32-S3, MQTT, and Supabase Cloud hosted on Google Cloud Platform (GCP).**
-
-![System Dashboard](Screenshot%202026-01-18%20224709.png)
 
 ## Project Overview
 This project implements a real-time smart ventilation system designed for fire safety and air quality monitoring. It collects environmental data (temperature and smoke levels) via an ESP32-S3 node and transmits it to a cloud-based database through a secure Python middleware for storage and real-time visualization.
@@ -18,11 +9,11 @@ This project implements a real-time smart ventilation system designed for fire s
 ## CPC357 - IoT Architecture and Smart Applications
 
 **Assignment 2**
-**For the attention of:** Dr. Mohd Nadhir Ab Wahab.
+**For the attention of:** Dr. Mohd Nadhir Ab Wahab
 
 **Group Members:**
-- [YOUR NAME] (Matric ID)
-- [PARTNER'S NAME] (Matric ID)
+- MUHAMMAD ARFAN BIN ZUHAIME (161508)
+- MUHAMMAD HAZIQ BIN MOHAMAD RODZALI (161423)
 ---
 
 ## System Components
@@ -33,7 +24,7 @@ This project implements a real-time smart ventilation system designed for fire s
     * MQ-2 Gas/Smoke Sensor
     * DHT11 Temperature Sensor
 * **Actuators:**
-    * 12V DC Exhaust Fan
+    * 300C 1.5-6VDC 7mm Shaft Motor + DIY 4 Blades 56mm Motor Propeller
     * Relay Module (5V)
     * I2C LCD Display (16x2)
 
@@ -84,6 +75,12 @@ This project implements a real-time smart ventilation system designed for fire s
 * **Interactive Dashboard:** Live gauges and synchronized line charts for environmental trend analysis.
 
 ## 🔧 Hardware Setup
+
+### Circuit Diagram
+
+The system integrates an ESP32-S3 with environmental sensors and an actuator control relay.
+
+![Circuit Diagram](CPC357_Assignment_2/circuit_image.png)
 
 ### Pin Connections
 
@@ -180,6 +177,13 @@ sudo systemctl start mqtt-bridge
 
 The custom dashboard provides a **Live Overview** of system metrics and historical line graphs to study environmental patterns over time. It also includes a **Recent Activity** log for tracking the five most recent sensor updates.
 
-```
+## Troubleshooting
 
-```
+| Issue | Potential Cause | Solution |
+| --- | --- | --- |
+| **MQTT Connection Failed** | Firewall blocking Port 1883 | Check GCP Firewall rules to ensure `tcp:1883` is allowed from `0.0.0.0/0`. |
+| **No Data in Dashboard** | Middleware Service stopped | Run `sudo systemctl status mqtt-bridge` to check if the Python script is running. |
+| **Sensors Reading 'NaN'** | Loose wiring | Check jumper wires on GPIO 1 (MQ-2) and GPIO 4 (DHT11). |
+
+### Link to the Dashboard
+Vercel Link: https://smart-ventilation-system.vercel.app/
